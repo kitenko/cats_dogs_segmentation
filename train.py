@@ -54,4 +54,3 @@ class TrainModel():
 
 
 x = TrainModel().train()
-

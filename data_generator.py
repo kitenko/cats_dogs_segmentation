@@ -55,5 +55,3 @@ class DataGenerator(keras.utils.Sequence):
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
             y[j] -= 1
         return x, y
-
-

@@ -26,3 +26,4 @@ class ModelSegmentaions():
         model = sm.Unet(backend=self.bakebone, encoder_weights=self.encoder_weights, classes=self.num_classes,
                         activation=self.activation, input_shape=self.image_shape)
         return model
+
