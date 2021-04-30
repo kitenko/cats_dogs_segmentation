@@ -1,5 +1,3 @@
-import os
-
 BATCH_SIZE = 8
 IMAGES = 'images/'
 TRIMAPS = 'annotations/trimaps/'

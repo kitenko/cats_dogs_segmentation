@@ -1,7 +1,5 @@
 from typing import Tuple
 
-import tensorflow as tf
-from tensorflow import keras
 import segmentation_models as sm
 
 from config import BACKBONE, NUMBER_CLASSES, ACTIVATION, INPUT_SHAPE, ENCODER_WEIGHTS

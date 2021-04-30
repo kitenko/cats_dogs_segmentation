@@ -56,3 +56,4 @@ class DataGenerator(keras.utils.Sequence):
             y[j] -= 1
         return x, y
 
+
