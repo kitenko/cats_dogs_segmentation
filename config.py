@@ -1,10 +1,17 @@
-BATCH_SIZE = 8
-IMAGES = 'images/'
-TRIMAPS = 'annotations/trimaps/'
-INPUT_SHAPE = (224, 224, 3)
-BACKBONE = 'resnet34'
+import os
+
+BATCH_SIZE = 4
 NUMBER_CLASSES = 37
+INPUT_SHAPE_IMAGE = (224, 224, 3)
+INPUT_SHAPE_TRIMAPS = (224, 224, NUMBER_CLASSES + 1)
+BACKBONE = 'resnet34'
 ACTIVATION = 'softmax'
 ENCODER_WEIGHTS = None
 PROPORTION_TEST_IMAGES = 0.2
 EPOCHS = 15
+DATA_PATH = 'data'
+JSON_FILE_PATH = os.path.join(DATA_PATH, 'data.json')
+IMAGES_PATH = os.path.join(DATA_PATH, 'images')
+ANNOTATIONS_PATH = os.path.join(DATA_PATH, 'annotations')
+TRIMAPS_PATH = os.path.join(ANNOTATIONS_PATH, 'trimaps')
+LEARNING_RATE = 0.0001

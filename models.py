@@ -2,12 +2,12 @@ from typing import Tuple
 
 import segmentation_models as sm
 
-from config import BACKBONE, NUMBER_CLASSES, ACTIVATION, INPUT_SHAPE, ENCODER_WEIGHTS
+from config import BACKBONE, NUMBER_CLASSES, ACTIVATION, INPUT_SHAPE_IMAGE, ENCODER_WEIGHTS
 
 
 class ModelSegmentaions():
     def __init__(self, bakebone: str = BACKBONE, num_classes: int = NUMBER_CLASSES, activation: str = ACTIVATION,
-                 image_shape: Tuple[int, int, int] = INPUT_SHAPE, encoder_weights: str = ENCODER_WEIGHTS) -> None:
+                 image_shape: Tuple[int, int, int] = INPUT_SHAPE_IMAGE, encoder_weights: str = ENCODER_WEIGHTS) -> None:
         """
 
         :param bakebone:

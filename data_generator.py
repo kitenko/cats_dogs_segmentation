@@ -1,57 +1,79 @@
-import os
+import json
 from typing import Tuple
 
+import cv2
 import numpy as np
 from tensorflow import keras
-from tensorflow.keras.preprocessing.image import load_img
 
-from config import IMAGES, TRIMAPS, BATCH_SIZE, INPUT_SHAPE, PROPORTION_TEST_IMAGES
+from config import BATCH_SIZE, INPUT_SHAPE_IMAGE, PROPORTION_TEST_IMAGES, JSON_FILE_PATH, INPUT_SHAPE_TRIMAPS
 
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, data_images: str = IMAGES, data_trimaps: str = TRIMAPS, batch_size: int = BATCH_SIZE,
-                 image_shape: Tuple[int, int, int] = INPUT_SHAPE, is_train: bool = True,
-                 proportion_test_images: float = PROPORTION_TEST_IMAGES) -> None:
+    def __init__(self, batch_size: int = BATCH_SIZE, image_shape: Tuple[int, int, int] = INPUT_SHAPE_IMAGE,
+                 is_train: bool = False, proportion_test_images: float = PROPORTION_TEST_IMAGES,
+                 json_path: str = JSON_FILE_PATH, trimaps_shape: Tuple[int, int, int] = INPUT_SHAPE_TRIMAPS) -> None:
 
-        self.data_images = data_images
-        self.data_trimaps = data_trimaps
         self.batch_size = batch_size
         self.image_shape = image_shape
-        self.img_size = (image_shape[0], image_shape[1])
+        self.trimaps_shape = trimaps_shape
         self.proportion_test_images = proportion_test_images
 
-        self.data_images = sorted(
-            [
-                os.path.join(data_images, fname)
-                for fname in os.listdir(data_images)
-                if fname.endswith(".jpg")
-            ]
-        )
-        self.data_trimaps = sorted(
-            [
-                os.path.join(data_trimaps, fname)
-                for fname in os.listdir(data_images)
-                if fname.endswith(".png") and not fname.startswith(".")
-            ]
-        )
+        # read json
+        with open(json_path) as f:
+            self.data = json.load(f)
+
+        if is_train:
+            self.data = self.data['train']
+        else:
+            self.data = self.data['test']
+
+        self.on_epoch_end()
+
+    def on_epoch_end(self) -> None:
+        """
+        Random shuffling of data at the end of each epoch.
+
+        """
+        np.random.shuffle(self.data)
 
     def __len__(self) -> int:
-        #return len(self.data) // self.batch_size + (len(self.data) % self.batch_size != 0)
-        return len(self.data_images) // self.batch_size
+        return len(self.data) // self.batch_size + (len(self.data) % self.batch_size != 0)
+        # return len(self.data) // self.batch_size
 
-    def __getitem__(self, idx):
-        """Returns tuple (input, target) correspond to batch #idx."""
-        i = idx * self.batch_size
-        batch_input_img_paths = self.data_images[i: i + self.batch_size]
-        batch_target_img_paths = self.data_trimaps[i: i + self.batch_size]
-        x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
-        for j, path in enumerate(batch_input_img_paths):
-            img = load_img(path, target_size=self.img_size)
-            x[j] = img
-        y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
-        for j, path in enumerate(batch_target_img_paths):
-            img = load_img(path, target_size=self.img_size, color_mode="grayscale")
-            y[j] = np.expand_dims(img, 2)
-            # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
-            y[j] -= 1
-        return x, y
+    def __getitem__(self, batch_idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        This function makes batch.
+
+        :param batch_idx: batch number.
+        :return: image tensor and list with labels tensors for each output.
+        """
+        batch = self.data[(batch_idx * self.batch_size):((batch_idx + 1) * self.batch_size)]
+        images = np.zeros((self.batch_size, self.image_shape[0], self.image_shape[1], self.image_shape[2]))
+        masks = np.zeros((self.batch_size, self.trimaps_shape[0], self.trimaps_shape[1], self.trimaps_shape[2]))
+        for i, image_dict in enumerate(batch):
+            img = cv2.imread(image_dict['image_path'])
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            resized_image = cv2.resize(img, (self.image_shape[1], self.image_shape[0]))
+            images[i, :, :, :] = resized_image
+            class_index = int(image_dict['class_index'])
+            mask_image = cv2.imread(image_dict['mask_path'], 0)
+            mask_image = cv2.resize(mask_image, (self.trimaps_shape[1], self.trimaps_shape[0]))
+            masks[i, :, :, class_index] = np.where(mask_image == 3, 1, 0)  # 3 - контур
+            masks[i, :, :, class_index] = np.where(mask_image == 1, 1, 0)  # 1 - объект
+            masks[i, :, :, -1] = np.where(mask_image == 2, 1, 0)  # 2 - фон
+        images = image_normalization(images)
+        return images, masks
+
+
+def image_normalization(image: np.ndarray) -> np.ndarray:
+    """
+    Image normalization.
+    :param image: image numpy array.
+    :return: normalized image.
+    """
+    return image / 255.0
+
+
+if __name__ == '__main__':
+    x = DataGenerator()
+    x.__len__()
