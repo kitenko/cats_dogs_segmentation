@@ -22,7 +22,7 @@ class ModelSegmentaions():
         self.image_shape = image_shape
         self.encoder_weights = encoder_weights
 
-    def build(self):
+    def build_unet(self):
         model = sm.Unet(backend=self.bakebone, encoder_weights=self.encoder_weights, classes=self.num_classes,
                         activation=self.activation, input_shape=self.image_shape)
         return model
