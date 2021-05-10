@@ -3,7 +3,7 @@ import os
 from config import NAME_MODEL, ENCODER_WEIGHTS, LOGS_DIR, SAVE_MODELS, TENSORBOARD_LOGS, BACKBONE
 
 
-def create_dirs():
+def create_dirs() -> None:
     os.makedirs(TENSORBOARD_LOGS, exist_ok=True)
     os.makedirs(LOGS_DIR, exist_ok=True)
     os.makedirs(SAVE_MODELS, exist_ok=True)
