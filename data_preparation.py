@@ -2,19 +2,21 @@ import os
 import json
 import random
 
+import cv2
+
 from config import JSON_FILE_PATH, IMAGES_PATH, TRIMAPS_PATH, PROPORTION_TEST_IMAGES
 
 
 def prepare_data(trimaps_path: str = TRIMAPS_PATH, proportion_test_images: float = PROPORTION_TEST_IMAGES,
                  json_file_path: str = JSON_FILE_PATH, images_path: str = IMAGES_PATH) -> None:
     """
+    This function creates json file that consist of train and test proportion images.
 
     :param trimaps_path: this is pass for trimap files.
     :param proportion_test_images: proportion of test images.
     :param json_file_path: path to save json file.
     :param images_path: this is path for image files.
     """
-
     # read list.txt with labels.
     list_txt = {}
     with open('data/annotations/list.txt', 'r') as f:
@@ -32,25 +34,35 @@ def prepare_data(trimaps_path: str = TRIMAPS_PATH, proportion_test_images: float
     # create dictionary
     train_test_json = {'train': [], 'test': []}
 
-    # checking trimap file in folder
-    def find(name, path):
+    def find(name, path) -> str:
+        """
+        This function checking trimap file in folder.
+
+        :param name: The name of the file to find.
+        :param path: This is the path where look for the file.
+        :return: Name trimaps file for image.
+        """
         for root, dirs, files in os.walk(path):
             if name in files:
-                return os.path.join(name)
+                return name
 
     # filling in dictionary for json file
     for j, i in enumerate(shuffle_images):
         try:
             trimaps = find(i.rsplit(".", 1)[0] + '.png', trimaps_path)
-            label = list_txt[i.rsplit(".", 1)[0]][0]
+            # label = list_txt[i.rsplit(".", 1)[0]]
+            label = 1
             img_dict = {'image_path': os.path.join(images_path, i), 'mask_path': os.path.join(trimaps_path, trimaps),
                         'class_index': label}
-            if j < len(shuffle_images) * proportion_test_images:
+            if cv2.imread(os.path.join(images_path, i)) is None:
+                print('broken image')
+                continue
+            elif j < len(shuffle_images) * proportion_test_images:
                 train_test_json['test'].append(img_dict)
             else:
                 train_test_json['train'].append(img_dict)
         except KeyError:
-            print(' no label for ', i)
+            print(' no mask for ', i)
 
     # write json file
     with open(json_file_path, 'w') as f:
