@@ -85,7 +85,7 @@ class DataGenerator(keras.utils.Sequence):
             masks[i, :, :, class_index - 1] = np.where(np.logical_or(mask_image == 3, mask_image == 1), 1, 0)
             masks[i, :, :, 1] = np.where(mask_image == 2, 1, 0)
         images = image_normalization(images)
-        return images, masks
+        return images, [masks, labels]
 
 
 def image_normalization(image: np.ndarray) -> np.ndarray:

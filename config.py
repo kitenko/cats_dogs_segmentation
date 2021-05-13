@@ -1,9 +1,11 @@
 import os
+from datetime import datetime
+
+date_time_for_save = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 BATCH_SIZE = 8
 NUMBER_CLASSES = 1 + 1
-INPUT_SHAPE_IMAGE = (224, 224, 3)
-INPUT_SHAPE_TRIMAPS = (224, 224, NUMBER_CLASSES)
+INPUT_SHAPE_IMAGE = (256, 256, 3)
 PROPORTION_TEST_IMAGES = 0.2
 EPOCHS = 150
 
@@ -11,25 +13,22 @@ DATA_PATH = 'data'
 JSON_FILE_PATH = os.path.join(DATA_PATH, 'data.json')
 IMAGES_PATH = os.path.join(DATA_PATH, 'images')
 ANNOTATIONS_PATH = os.path.join(DATA_PATH, 'annotations')
-TRIMAPS_PATH = os.path.join(ANNOTATIONS_PATH, 'trimaps')
+MASKS_PATH = os.path.join(ANNOTATIONS_PATH, 'masks')
 
 LEARNING_RATE = 0.0001
 BACKBONE = 'resnet18'
 # ENCODER_WEIGHTS = None
 ENCODER_WEIGHTS = 'imagenet'
-# ACTIVATION = 'sigmoid'
 ACTIVATION = 'softmax'
 NAME_MODEL = 'Unet'
 FULL_NAME_MODEL = NAME_MODEL + BACKBONE
-FULL_NAME_MODEL_H5 = NAME_MODEL + BACKBONE + '.h5'
 
-TENSORBOARD_LOGS = 'tensorboard_logs'
-LOGS_DIR = 'logs_dir'
-SAVE_MODELS = 'save_models'
+MODELS_DATA = 'models_data'
+TENSORBOARD_LOGS = os.path.join(MODELS_DATA, 'tensorboard_logs')
+SAVE_MODELS = os.path.join(MODELS_DATA, 'save_models')
+LOGS = os.path.join(MODELS_DATA, 'logs')
 
-if ENCODER_WEIGHTS == None:
-    LOGS_DIR_CURRENT_MODEL = os.path.join(LOGS_DIR, NAME_MODEL + BACKBONE + 'weights_no')
-    SAVE_CURRENT_MODEL = os.path.join(SAVE_MODELS, NAME_MODEL + BACKBONE + 'weights_no')
-else:
-    LOGS_DIR_CURRENT_MODEL = os.path.join(LOGS_DIR, NAME_MODEL + BACKBONE + ENCODER_WEIGHTS)
-    SAVE_CURRENT_MODEL = os.path.join(SAVE_MODELS, NAME_MODEL + BACKBONE + ENCODER_WEIGHTS)
+LOGS_DIR_CURRENT_MODEL = os.path.join(LOGS, NAME_MODEL + '_' + str(ENCODER_WEIGHTS) + '_' + date_time_for_save)
+SAVE_CURRENT_MODEL = os.path.join(SAVE_MODELS, NAME_MODEL + '_' + str(ENCODER_WEIGHTS) + '_' + date_time_for_save)
+SAVE_CURRENT_TENSORBOARD_LOGS = os.path.join(TENSORBOARD_LOGS, NAME_MODEL + '_' + str(ENCODER_WEIGHTS) + '_' +
+                                             date_time_for_save)

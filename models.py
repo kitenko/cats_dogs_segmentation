@@ -25,13 +25,14 @@ class ModelSegmentaions():
         self.image_shape = image_shape
         self.encoder_weights = encoder_weights
 
-    def build_unet(self) -> tf.keras.model:
-        """
-        This function builds Unet model based on the input parameters.
 
-        :return: tf.keras.model
-        """
-        model = sm.Unet(backbone_name=self.bakebone_name, encoder_weights=self.encoder_weights,
-                        classes=self.num_classes, activation=self.activation, input_shape=self.image_shape)
-        return model
+def build_unet():
+    """
+    This function builds Unet model based on the input parameters.
+
+    :return: tf.keras.model
+    """
+    model = sm.Unet(backbone_name=self.bakebone_name, encoder_weights=self.encoder_weights,
+                    classes=self.num_classes, activation=self.activation, input_shape=self.image_shape)
+    return model
 

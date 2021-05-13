@@ -4,10 +4,10 @@ import random
 
 import cv2
 
-from config import JSON_FILE_PATH, IMAGES_PATH, TRIMAPS_PATH, PROPORTION_TEST_IMAGES
+from config import JSON_FILE_PATH, IMAGES_PATH, MASKS_PATH, PROPORTION_TEST_IMAGES
 
 
-def prepare_data(trimaps_path: str = TRIMAPS_PATH, proportion_test_images: float = PROPORTION_TEST_IMAGES,
+def prepare_data(trimaps_path: str = MASKS_PATH, proportion_test_images: float = PROPORTION_TEST_IMAGES,
                  json_file_path: str = JSON_FILE_PATH, images_path: str = IMAGES_PATH) -> None:
     """
     This function creates json file that consist of train and test proportion images.
@@ -19,9 +19,9 @@ def prepare_data(trimaps_path: str = TRIMAPS_PATH, proportion_test_images: float
     """
     # read list.txt with labels.
     list_txt = {}
-    with open('data/annotations/list.txt', 'r') as f:
+    with open('data/annotations/list.txt') as f:  # path
         while True:
-            line = f.readline()
+            line = f.readline() # f.readlines() and for
             line = line.split()
             if not line:
                 break
@@ -29,7 +29,9 @@ def prepare_data(trimaps_path: str = TRIMAPS_PATH, proportion_test_images: float
 
     # reading and shuffling files
     count_images = os.listdir(images_path)
-    shuffle_images = random.sample(count_images, len(count_images))
+    import numpy as np
+    np.random.shuffle(count_images)
+    # shuffle_images = random.sample(count_images, len(count_images))
 
     # create dictionary
     train_test_json = {'train': [], 'test': []}
@@ -48,6 +50,8 @@ def prepare_data(trimaps_path: str = TRIMAPS_PATH, proportion_test_images: float
 
     # filling in dictionary for json file
     for j, i in enumerate(shuffle_images):
+        if not os.path.exists('some/path'):
+            continue
         try:
             trimaps = find(i.rsplit(".", 1)[0] + '.png', trimaps_path)
             # label = list_txt[i.rsplit(".", 1)[0]]
