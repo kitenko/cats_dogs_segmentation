@@ -36,3 +36,4 @@ def build_model(backbone_name: str = BACKBONE, num_classes: int = NUMBER_CLASSES
     else:
         raise print('model name is wrong')
     return model
+
