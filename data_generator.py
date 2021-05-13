@@ -7,26 +7,28 @@ import albumentations as A
 import matplotlib.pyplot as plt
 from tensorflow import keras
 
-from config import BATCH_SIZE, INPUT_SHAPE_IMAGE, JSON_FILE_PATH, INPUT_SHAPE_TRIMAPS
+from config import BATCH_SIZE, INPUT_SHAPE_IMAGE, JSON_FILE_PATH, NUMBER_CLASSES, AUGMENTATION_DATA
 
 
 class DataGenerator(keras.utils.Sequence):
     def __init__(self, batch_size: int = BATCH_SIZE, image_shape: Tuple[int, int, int] = INPUT_SHAPE_IMAGE,
-                 json_path: str = JSON_FILE_PATH, trimaps_shape: Tuple[int, int, int] = INPUT_SHAPE_TRIMAPS,
-                 is_train: bool = False) -> None:
+                 json_path: str = JSON_FILE_PATH, is_train: bool = False, number_classes: int = NUMBER_CLASSES,
+                 augmentation_data: bool = AUGMENTATION_DATA) -> None:
         """
         Data generator for the task of semantic segmentation cats and dogs.
 
         :param batch_size: number of images in one batch.
         :param image_shape: this is image shape (height, width, channels).
         :param json_path: this is path for json file.
-        :param trimaps_shape: this is trimaps shape (height, width, channels).
         :param is_train: if is_train = True, then we work with train images, otherwise with test.
+        :param number_classes = number of classes.
+        :param augmentation_data: if this parameter is True, then augmentation is applied to the training dataset.
         """
 
         self.batch_size = batch_size
         self.image_shape = image_shape
-        self.trimaps_shape = trimaps_shape
+        self.number_classes = number_classes
+        self.augmentation_data = augmentation_data
 
         # read json
         with open(json_path) as f:
@@ -35,19 +37,12 @@ class DataGenerator(keras.utils.Sequence):
         # augmentation data
         if is_train:
             self.data = self.data['train']
-            augmentations = A.Compose([
-                A.Resize(height=self.image_shape[0], width=self.image_shape[1]),
-                A.Blur(p=0.3),
-                A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, always_apply=False, p=0.5),
-                A.GaussNoise(var_limit=(10.0, 50.0), mean=0, always_apply=False, p=0.5),
-                A.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, always_apply=False,
-                                     p=0.5)
-            ])
+            augmentation = augmentation_images(train_data=self.augmentation_data)
         else:
             self.data = self.data['test']
-            augmentations = A.Resize(height=self.image_shape[0], width=self.image_shape[1])
+            augmentation = augmentation_images(train_data=False)
 
-        self.aug = augmentations
+        self.aug = augmentation
         self.on_epoch_end()
 
     def on_epoch_end(self) -> None:
@@ -69,7 +64,7 @@ class DataGenerator(keras.utils.Sequence):
         """
         batch = self.data[(batch_idx * self.batch_size):((batch_idx + 1) * self.batch_size)]
         images = np.zeros((self.batch_size, self.image_shape[0], self.image_shape[1], self.image_shape[2]))
-        masks = np.zeros((self.batch_size, self.trimaps_shape[0], self.trimaps_shape[1], self.trimaps_shape[2]))
+        masks = np.zeros((self.batch_size, self.image_shape[0], self.image_shape[1], self.number_classes))
         for i, image_dict in enumerate(batch):
             img = cv2.imread(image_dict['image_path'])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -78,14 +73,35 @@ class DataGenerator(keras.utils.Sequence):
             augmented = self.aug(image=img, mask=mask_image)
             img = augmented['image']
             mask_image = augmented['mask']
-            # img = cv2.resize(img, (self.image_shape[1], self.image_shape[0]))
-            # mask_image = cv2.resize(mask_image, (self.trimaps_shape[1], self.trimaps_shape[0]))
             images[i, :, :, :] = img
             # 3 - object outline, 1 - object, 2 - background
             masks[i, :, :, class_index - 1] = np.where(np.logical_or(mask_image == 3, mask_image == 1), 1, 0)
             masks[i, :, :, 1] = np.where(mask_image == 2, 1, 0)
         images = image_normalization(images)
-        return images, [masks, labels]
+        # return images, [masks, labels]
+        return images, masks
+
+
+def augmentation_images(train_data: bool = False) -> A.Compose:
+    """
+    This function makes augmentation data.
+
+    :param train_data: if this parameter is True then augmentation is applied to train dataset.
+    :return: augment data
+    """
+    if train_data is True:
+        aug = A.Compose([
+            A.Resize(height=INPUT_SHAPE_IMAGE[1], width=INPUT_SHAPE_IMAGE[0]),
+            A.Blur(p=0.3),
+            A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, always_apply=False, p=0.5),
+            A.GaussNoise(var_limit=(10.0, 50.0), mean=0, always_apply=False, p=0.5),
+            A.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, always_apply=False,
+                                 p=0.5)
+            ])
+    else:
+        aug = A.Compose([A.Resize(height=INPUT_SHAPE_IMAGE[1], width=INPUT_SHAPE_IMAGE[0])])
+
+    return aug
 
 
 def image_normalization(image: np.ndarray) -> np.ndarray:
@@ -125,4 +141,4 @@ def show(batch) -> None:
 
 if __name__ == '__main__':
     x = DataGenerator()
-    show(x.__getitem__(5))
+    show(x[4])
