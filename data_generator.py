@@ -7,13 +7,13 @@ import albumentations as A
 import matplotlib.pyplot as plt
 from tensorflow import keras
 
-from config import BATCH_SIZE, INPUT_SHAPE_IMAGE, JSON_FILE_PATH, NUMBER_CLASSES, AUGMENTATION_DATA
+from config import BATCH_SIZE, INPUT_SHAPE_IMAGE, JSON_FILE_PATH, NUMBER_CLASSES, USE_AUGMENTATION
 
 
 class DataGenerator(keras.utils.Sequence):
     def __init__(self, batch_size: int = BATCH_SIZE, image_shape: Tuple[int, int, int] = INPUT_SHAPE_IMAGE,
                  json_path: str = JSON_FILE_PATH, is_train: bool = False, number_classes: int = NUMBER_CLASSES,
-                 augmentation_data: bool = AUGMENTATION_DATA) -> None:
+                 augmentation_data: bool = USE_AUGMENTATION) -> None:
         """
         Data generator for the task of semantic segmentation cats and dogs.
 
@@ -37,10 +37,10 @@ class DataGenerator(keras.utils.Sequence):
         # augmentation data
         if is_train:
             self.data = self.data['train']
-            augmentation = augmentation_images(train_data=self.augmentation_data)
+            augmentation = images_augmentation(train_data=self.augmentation_data)
         else:
             self.data = self.data['test']
-            augmentation = augmentation_images(train_data=False)
+            augmentation = images_augmentation(train_data=False)
 
         self.aug = augmentation
         self.on_epoch_end()
@@ -78,11 +78,10 @@ class DataGenerator(keras.utils.Sequence):
             masks[i, :, :, class_index - 1] = np.where(np.logical_or(mask_image == 3, mask_image == 1), 1, 0)
             masks[i, :, :, 1] = np.where(mask_image == 2, 1, 0)
         images = image_normalization(images)
-        # return images, [masks, labels]
         return images, masks
 
 
-def augmentation_images(train_data: bool = False) -> A.Compose:
+def images_augmentation(train_data: bool = False) -> A.Compose:
     """
     This function makes augmentation data.
 
@@ -113,7 +112,7 @@ def image_normalization(image: np.ndarray) -> np.ndarray:
     return image / 255.0
 
 
-def show(batch) -> None:
+def show(batch: Tuple[np.ndarray, np.ndarray], train_data: bool = USE_AUGMENTATION) -> None:
     """
     This function shows image and masks.
 
@@ -124,11 +123,13 @@ def show(batch) -> None:
     for i, j in enumerate(images):
         mask_background = masks[i, :, :, 1]
         mask_animal = masks[i, :, :, 0]
-        # mask_contour = masks[i, :, :, -1]
         plt.figure(figsize=[10, 10])
         f, ax = plt.subplots(3, 1)
         ax[0].imshow(j)
-        ax[0].set_title('Original image', fontsize=fontsize)
+        if train_data is True:
+            ax[0].set_title('Augmented image', fontsize=fontsize)
+        else:
+            ax[0].set_title('Original image', fontsize=fontsize)
         ax[1].imshow(mask_animal)
         ax[1].set_title('Mask dog or cat', fontsize=fontsize)
         ax[2].imshow(mask_background)
@@ -141,4 +142,5 @@ def show(batch) -> None:
 
 if __name__ == '__main__':
     x = DataGenerator()
-    show(x[4])
+    for i in range(len(x)):
+        show(x[i])
