@@ -12,12 +12,12 @@ def parse_args() -> argparse.Namespace:
     """
     Parsing command line arguments with argparse.
     """
-    parser = argparse.ArgumentParser('Path for loading model weights.')
+    parser = argparse.ArgumentParser('script for model testing.')
     parser.add_argument('--weights', type=str, default=None, help='Path for loading model weights.')
     return parser.parse_args()
 
 
-def load_model(image: np.ndarray) -> np.ndarray:
+def preparing_frame(image: np.ndarray) -> np.ndarray:
     """
     This function prepares the image and calls the predicted method.
 
@@ -42,7 +42,7 @@ def visualization() -> None:
         ret, frame = cap.read()
         # Display the resulting frame
         cv2.resize(frame, (INPUT_SHAPE_IMAGE[1], INPUT_SHAPE_IMAGE[0]))
-        predict_mask = load_model(image=frame)
+        predict_mask = preparing_frame(image=frame)
         predict_mask = cv2.resize(predict_mask, (720, 720))
         cv2.imshow('frame', predict_mask)
         if cv2.waitKey(1) & 0xFF == ord('q'):
