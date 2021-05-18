@@ -13,7 +13,7 @@ from config import BATCH_SIZE, INPUT_SHAPE_IMAGE, JSON_FILE_PATH, NUMBER_CLASSES
 class DataGenerator(keras.utils.Sequence):
     def __init__(self, batch_size: int = BATCH_SIZE, image_shape: Tuple[int, int, int] = INPUT_SHAPE_IMAGE,
                  json_path: str = JSON_FILE_PATH, is_train: bool = False, number_classes: int = NUMBER_CLASSES,
-                 augmentation_data: bool = USE_AUGMENTATION) -> None:
+                 use_augmentation_data: bool = USE_AUGMENTATION) -> None:
         """
         Data generator for the task of semantic segmentation cats and dogs.
 
@@ -22,13 +22,13 @@ class DataGenerator(keras.utils.Sequence):
         :param json_path: this is path for json file.
         :param is_train: if is_train = True, then we work with train images, otherwise with test.
         :param number_classes = number of classes.
-        :param augmentation_data: if this parameter is True, then augmentation is applied to the training dataset.
+        :param use_augmentation_data: if this parameter is True, then augmentation is applied to the training dataset.
         """
 
         self.batch_size = batch_size
         self.image_shape = image_shape
         self.number_classes = number_classes
-        self.augmentation_data = augmentation_data
+        self.use_augmentation_data = use_augmentation_data
 
         # read json
         with open(json_path) as f:
@@ -37,7 +37,7 @@ class DataGenerator(keras.utils.Sequence):
         # augmentation data
         if is_train:
             self.data = self.data['train']
-            augmentation = images_augmentation(train_data=self.augmentation_data)
+            augmentation = images_augmentation(train_data=self.use_augmentation_data)
         else:
             self.data = self.data['test']
             augmentation = images_augmentation(train_data=False)
@@ -80,6 +80,34 @@ class DataGenerator(keras.utils.Sequence):
         images = image_normalization(images)
         return images, masks
 
+    def show(self) -> None:
+        """
+        This function shows image and masks.
+        """
+        for i in range(len(self)):
+            batch = self[i]
+
+            images, masks = batch[0], batch[1]
+            fontsize = 8
+            for i, j in enumerate(images):
+                mask_background = masks[i, :, :, 1]
+                mask_animal = masks[i, :, :, 0]
+                plt.figure(figsize=[10, 10])
+                f, ax = plt.subplots(3, 1)
+                ax[0].imshow(j)
+                if self.use_augmentation_data is True:
+                    ax[0].set_title('Augmented image', fontsize=fontsize)
+                else:
+                    ax[0].set_title('Original image', fontsize=fontsize)
+                ax[1].imshow(mask_animal)
+                ax[1].set_title('Mask dog or cat', fontsize=fontsize)
+                ax[2].imshow(mask_background)
+                ax[2].set_title('Mask background', fontsize=fontsize)
+                if plt.waitforbuttonpress(0):
+                    plt.close('all')
+                    raise SystemExit
+                plt.close()
+
 
 def images_augmentation(train_data: bool = False) -> A.Compose:
     """
@@ -112,35 +140,6 @@ def image_normalization(image: np.ndarray) -> np.ndarray:
     return image / 255.0
 
 
-def show(batch: Tuple[np.ndarray, np.ndarray], train_data: bool = USE_AUGMENTATION) -> None:
-    """
-    This function shows image and masks.
-
-    :param batch: this parameter takes Tuple[np.ndarray, np.ndarray] from __getitem__. 
-    """
-    images, masks = batch[0], batch[1]
-    fontsize = 8
-    for i, j in enumerate(images):
-        mask_background = masks[i, :, :, 1]
-        mask_animal = masks[i, :, :, 0]
-        plt.figure(figsize=[10, 10])
-        f, ax = plt.subplots(3, 1)
-        ax[0].imshow(j)
-        if train_data is True:
-            ax[0].set_title('Augmented image', fontsize=fontsize)
-        else:
-            ax[0].set_title('Original image', fontsize=fontsize)
-        ax[1].imshow(mask_animal)
-        ax[1].set_title('Mask dog or cat', fontsize=fontsize)
-        ax[2].imshow(mask_background)
-        ax[2].set_title('Mask background', fontsize=fontsize)
-        if plt.waitforbuttonpress(0):
-            plt.close('all')
-            raise SystemExit
-        plt.close()
-
-
 if __name__ == '__main__':
     x = DataGenerator()
-    for i in range(len(x)):
-        show(x[i])
+    x.show()
