@@ -21,18 +21,21 @@ def build_model(backbone_name: str = BACKBONE, num_classes: int = NUMBER_CLASSES
     :param name_model: name model(Unet, Linknet, PSPNet, FPN).
     :return: tf.keras.models.Model.
     """
-    if name_model == 'Unet':
-        model = sm.Unet(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
-                        activation=activation, input_shape=image_shape)
-    elif name_model == 'Linknet':
-        model = sm.Linknet(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
+    try:
+        if name_model == 'Unet':
+            model = sm.Unet(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
+                            activation=activation, input_shape=image_shape)
+        elif name_model == 'Linknet':
+            model = sm.Linknet(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
+                               activation=activation, input_shape=image_shape)
+        elif name_model == 'PSPNet':
+            model = sm.PSPNet(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
+                              activation=activation, input_shape=image_shape)
+        elif name_model == 'FPN':
+            model = sm.FPN(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
                            activation=activation, input_shape=image_shape)
-    elif name_model == 'PSPNet':
-        model = sm.PSPNet(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
-                          activation=activation, input_shape=image_shape)
-    elif name_model == 'FPN':
-        model = sm.FPN(backbone_name=backbone_name, encoder_weights=encoder_weights, classes=num_classes,
-                       activation=activation, input_shape=image_shape)
-    else:
-        raise print('model name is wrong')
+        else:
+            print('model name is wrong')
+    except ValueError:
+        print('model name or backbone is wrong')
     return model
