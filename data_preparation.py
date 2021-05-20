@@ -42,9 +42,7 @@ def prepare_data(masks_path: str = MASKS_PATH, proportion_test_images: float = P
             continue
         else:
             masks = i.rsplit(".", 1)[0] + '.png'
-            label = 1
-            img_dict = {'image_path': os.path.join(images_path, i), 'mask_path': os.path.join(masks_path, masks),
-                        'class_index': label}
+            img_dict = {'image_path': os.path.join(images_path, i), 'mask_path': os.path.join(masks_path, masks)}
             if cv2.imread(os.path.join(images_path, i)) is None:
                 print('broken image')
                 continue

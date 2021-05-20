@@ -68,14 +68,13 @@ class DataGenerator(keras.utils.Sequence):
         for i, image_dict in enumerate(batch):
             img = cv2.imread(image_dict['image_path'])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            class_index = int(image_dict['class_index'])
             mask_image = cv2.imread(image_dict['mask_path'], 0)
             augmented = self.aug(image=img, mask=mask_image)
             img = augmented['image']
             mask_image = augmented['mask']
             images[i, :, :, :] = img
             # 3 - object outline, 1 - object, 2 - background
-            masks[i, :, :, class_index - 1] = np.where(np.logical_or(mask_image == 3, mask_image == 1), 1, 0)
+            masks[i, :, :, 0] = np.where(np.logical_or(mask_image == 3, mask_image == 1), 1, 0)
             masks[i, :, :, 1] = np.where(mask_image == 2, 1, 0)
         images = image_normalization(images)
         return images, masks

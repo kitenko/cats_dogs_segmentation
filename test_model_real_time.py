@@ -2,6 +2,7 @@ import argparse
 
 import cv2
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from models import build_model
@@ -19,10 +20,10 @@ def parse_args() -> argparse.Namespace:
 
 def preparing_frame(image: np.ndarray, model) -> np.ndarray:
     """
-    This function prepares the image and calls the predicted method.
+    This function prepares the image and makes a prediction.
 
     :param image: this is input image or frame.
-    :param model: assembled model with loaded weights.
+    :param model: model with loaded weights.
     :return: image with an overlay mask
     """
     image = cv2.resize(image, (INPUT_SHAPE_IMAGE[1], INPUT_SHAPE_IMAGE[0]))
@@ -50,7 +51,7 @@ def visualization() -> None:
         predict_mask = preparing_frame(image=frame, model=model)
         predict_mask = cv2.resize(predict_mask, (720, 720))
         cv2.imshow('frame', predict_mask)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & ord('q'):
             break
     # When everything done, release the capture
     cap.release()
@@ -58,4 +59,6 @@ def visualization() -> None:
 
 
 if __name__ == '__main__':
+    devices = tf.config.experimental.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(devices[0], True)
     visualization()
