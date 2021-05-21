@@ -51,7 +51,7 @@ def visualization() -> None:
         predict_mask = preparing_frame(image=frame, model=model)
         predict_mask = cv2.resize(predict_mask, (720, 720))
         cv2.imshow('frame', predict_mask)
-        if cv2.waitKey(1) & ord('q'):
+        if cv2.waitKey(1) == ord('q'):
             break
     # When everything done, release the capture
     cap.release()

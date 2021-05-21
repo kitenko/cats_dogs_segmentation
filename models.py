@@ -37,5 +37,5 @@ def build_model(backbone_name: str = BACKBONE, num_classes: int = NUMBER_CLASSES
         else:
             print('model name is wrong')
     except ValueError:
-        print('model name or backbone is wrong')
+        raise
     return model

@@ -43,7 +43,7 @@ python train.py
 ## 3. Plotting graphs
 If you want to build graphs from saved logs, you can use tens or board by passing the path to the logs folder.
 ```shell script
-tensorboard --logdir path/to/logs
+tensorboard --logdir models_data/tensorboard_logs/Linknet_imagenet_2021-05-18_20-48-16_False
 ```
 ## 4. Testing
 You can test the model using a webcam.
@@ -62,9 +62,11 @@ The graphs show metrics during model training with loaded "imagenet" weights. Th
 line is val
 Prediction examples:
 
-![example_2](examples_for_github/imagenet_acc.png)
-![example_3](examples_for_github/imagenet_f1-score.png)
-![example_4](examples_for_github/imagenet_iou.png)
-![example_5](examples_for_github/imagenet_loss.png)
+This is iou_score metric.
+![example_2](examples_for_github/image01.png)
+
+This is loss.
+![example_3](examples_for_github/image02.png)
+
 
 

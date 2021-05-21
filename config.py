@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-BATCH_SIZE = 4
+BATCH_SIZE = 8
 NUMBER_CLASSES = 2
 INPUT_SHAPE_IMAGE = (256, 256, 3)
 PROPORTION_TEST_IMAGES = 0.2
@@ -9,10 +9,10 @@ EPOCHS = 150
 LEARNING_RATE = 0.0001
 USE_AUGMENTATION = False
 
-BACKBONE = 'resnet18'
-ENCODER_WEIGHTS = None
+BACKBONE = 'efficientnetb0'
+ENCODER_WEIGHTS = 'imagenet'
 OUTPUT_ACTIVATION = 'softmax'
-MODEL_NAME = 'Unet'
+MODEL_NAME = 'Linknet'
 
 DATA_PATH = 'data'
 JSON_FILE_PATH = os.path.join(DATA_PATH, 'data.json')
